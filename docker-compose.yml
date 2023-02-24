@@ -81,7 +81,7 @@ services:
       MINIO_KMS_KES_KEY_FILE: /data/client.key
       MINIO_KMS_KES_CERT_FILE: /data/client.cert
       MINIO_KMS_KES_CAPATH: /data/server.cert
-      MINIO_KMS_KES_KEY_NAME: my-minioz
+      MINIO_KMS_KES_KEY_NAME: my-minio
     command: server --console-address ":9090" /data
     volumes:
       - ./data/minio:/data  
