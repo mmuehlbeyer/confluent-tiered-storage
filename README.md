@@ -120,7 +120,7 @@ login to minio webui http://127.0.0.1:9090
 
 ### create a bucket
 choose a proper name and keep the rest with the defaults
-and update the bucket name in docker-compose.yml (```KAFKA_CONFLUENT_TIER_S3_BUCKET``` )
+and update the bucket name in [ docker-compose.yml](docker-compose.yml) (```KAFKA_CONFLUENT_TIER_S3_BUCKET``` )
 alternatively name the bucket **tiered-storage** and keep everything as it is ;-)
 
 ![create-bucket.png](assets/create-bucket.png)
@@ -131,8 +131,7 @@ alternatively name the bucket **tiered-storage** and keep everything as it is ;-
 ### create an access key
 
 do not forget to adapt ```AWS_ACCESS_KEY_ID```and    ```AWS_SECRET_ACCESS_KEY```
-in docker-compose.yml 
-or create the access with the values provided in the compose file.
+in [ docker-compose.yml](docker-compose.yml) or create the access with the values provided in the compose file.
 
 ![create-bucket.png](assets/create-access-key.png)
 
