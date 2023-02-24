@@ -1,7 +1,14 @@
 # confluent-tiered-storage
 
-### Prerequisits
+## Prerequisits
 
+* A recent version of Confluent Platform installed
+* Linux or MacOS operating system 
+* bash
+* docker-compose
+* access to docker hub
+
+## How to run this demo
 
 ### Create certs for kes
 
@@ -95,6 +102,7 @@ docker logs minio-kes
 copy the created certs from kes directory to minio data directory
 
 ```bash
+mkdir -p data/minio
 cp kes/client.* data/minio
 cp kes/server.cert data/minio
 ```
@@ -112,6 +120,8 @@ login to minio webui http://127.0.0.1:9090
 
 ### create a bucket
 choose a proper name and keep the rest with the defaults
+and update the bucket name in docker-compose.yml (```KAFKA_CONFLUENT_TIER_S3_BUCKET``` )
+alternatively name the bucket **tiered-storage** and keep everything as it is ;-)
 
 ![create-bucket.png](assets/create-bucket.png)
 
@@ -119,10 +129,19 @@ choose a proper name and keep the rest with the defaults
 
 
 ### create an access key
+
+do not forget to adapt ```AWS_ACCESS_KEY_ID```and    ```AWS_SECRET_ACCESS_KEY```
+in docker-compose.yml 
+or create the access with the values provided in the compose file.
+
 ![create-bucket.png](assets/create-access-key.png)
 
 
-### create a new polidy for our access key with
+
+### create a new polidy for access key with
+
+adapt the bucket name if neeed 
+
 ```json
 {
     "Version": "2012-10-17",
