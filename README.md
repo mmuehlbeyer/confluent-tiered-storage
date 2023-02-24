@@ -1,9 +1,9 @@
 # confluent-tiered-storage
 
-## Prerequisits
+### Prerequisits
 
 
-## Create certs for kes
+### Create certs for kes
 
 As mentioned above we need encrypted minio buckets to work with Confluent Tiered Storage.
 
@@ -75,7 +75,7 @@ The identity can be computed again via:
 we will need this identity from above for configuring the kes server.
 
 
-## configure the kes server
+### configure the kes server
 
 copy identy from above to config.yml
 
@@ -89,14 +89,14 @@ check the logs for any erros with
 
 docker logs minio-kes
 
-## prepare minio
+### prepare minio
 
 copy the created certs from kes directory to minio data directory
 
 cp kes/client.* data/minio
 cp kes/server.cert data/minio
 
-## start minio only with 
+### start minio only with 
 adapt minio root user and password if needed
 
 ```bash
@@ -104,20 +104,23 @@ docker-compose up -d minio
 ```
 
 
-## create a bucket for our demo case
+### create a bucket for our demo case
 login to minio webui http://127.0.0.1:9090
 
-create a bucket
+### create a bucket
+choose a proper name and keep the rest with the defaults
 
 ![create-bucket.png](assets/create-bucket.png)
 
+![create-bucket.png](assets/bucket-ready.png)
 
-choose a proper name and keep the rest with the defaults
 
-create an access key
+### create an access key
+![create-bucket.png](assets/create-access-key.png)
 
-create a new polidy for our access key with
 
+### create a new polidy for our access key with
+```json
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -136,20 +139,26 @@ create a new polidy for our access key with
       }
     ]
   }
+```
+
+### go back to the bucket and configure encryption
+![create-bucket.png](assets/bucket-encryption.png)
+
+![encryption-enabled.png](assets/encryption-enabled.png)
 
 
-got back to the bucket and configure encryption
-
-startup everything else
-
+### startup the kafka stack
 docker-compose up -d
 
-create a topic in the cluster
+### create a topic in the cluster
 
 kafka-topics --create --bootstrap-server localhost:9092 --topic demo-tier
 
-produce some data
+### produce some data
 kafka-producer-perf-test --producer-props bootstrap.servers=localhost:9092 --topic demo-tier --record-size 1000 --throughput 1000 --num-records 3600000
 
 As we have choosen a pretty small hotset we should quickly see data arriving in our minio bucket
 
+![bucket-objects.png](assets/bucket-objects.png)
+
+![c3-tiered-storage](assets/c3-tiered-storage.png)
