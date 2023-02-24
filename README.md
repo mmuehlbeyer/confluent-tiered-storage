@@ -87,14 +87,17 @@ docker-compose -f docker-compose-kes.yml up -d
 
 check the logs for any erros with
 
+```bash
 docker logs minio-kes
-
+```
 ### prepare minio
 
 copy the created certs from kes directory to minio data directory
 
+```bash
 cp kes/client.* data/minio
 cp kes/server.cert data/minio
+```
 
 ### start minio only with 
 adapt minio root user and password if needed
@@ -148,14 +151,20 @@ choose a proper name and keep the rest with the defaults
 
 
 ### startup the kafka stack
+```bash
 docker-compose up -d
+```
 
 ### create a topic in the cluster
 
+```bash
 kafka-topics --create --bootstrap-server localhost:9092 --topic demo-tier
+```
 
 ### produce some data
+```bash
 kafka-producer-perf-test --producer-props bootstrap.servers=localhost:9092 --topic demo-tier --record-size 1000 --throughput 1000 --num-records 3600000
+```
 
 As we have choosen a pretty small hotset we should quickly see data arriving in our minio bucket
 
