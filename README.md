@@ -12,7 +12,8 @@ TLS private key and self-signed cert (adapt the dir  if needed)
 
 ```bash
 
-openssl req -x509 -nodes -days 7300 -newkey rsa:2048 -keyout kes/server.key -out kes/server.cert -subj "/C=/ST=/L=/O=/CN=localhost" -addext "subjectAltName = IP:127.0.0.1, DNS:minio-kes"
+openssl req -x509 -nodes -days 7300 -newkey rsa:2048 -keyout kes/server.key -out kes/server.cert \
+ -subj "/C=/ST=/L=/O=/CN=localhost" -addext "subjectAltName = IP:127.0.0.1, DNS:minio-kes"
 
 ```
 
@@ -38,7 +39,7 @@ req: No value provided for Subject Attribute O, skipped
 Next we create a TLS private/public key pair for client authentication.
 
 ```bash
-docker run -v $PWD/kes:/root minio/kes  identity new --cert /root/client.crt --key /root/client.key myapp
+docker run -v $PWD/kes:/root minio/kes  identity new --cert /root/client.cert --key /root/client.key myapp
 ```
 
 
@@ -84,19 +85,71 @@ start kes with
 docker-compose -f docker-compose-kes.yml up -d 
 ```
 
+check the logs for any erros with
 
-## create a key for minio
-docker exec -it minio-kes ./kes  key create -k my-minio
+docker logs minio-kes
 
+## prepare minio
 
+copy the created certs from kes directory to minio data directory
 
+cp kes/client.* data/minio
+cp kes/server.cert data/minio
 
-## start the kafka stack along with minio
-
-adapt minio root user and password if wanted
+## start minio only with 
+adapt minio root user and password if needed
 
 ```bash
-docker-compose up -d
+docker-compose up -d minio
 ```
 
+
+## create a bucket for our demo case
 login to minio webui http://127.0.0.1:9090
+
+create a bucket
+
+![create-bucket.png](assets/create-bucket.png)
+
+
+choose a proper name and keep the rest with the defaults
+
+create an access key
+
+create a new polidy for our access key with
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "s3:DeleteObject",
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:GetBucketLocation"
+        ],
+        "Resource": [
+          "arn:aws:s3:::tiered-storage",
+          "arn:aws:s3:::tiered-storage*"
+        ]
+      }
+    ]
+  }
+
+
+got back to the bucket and configure encryption
+
+startup everything else
+
+docker-compose up -d
+
+create a topic in the cluster
+
+kafka-topics --create --bootstrap-server localhost:9092 --topic demo-tier
+
+produce some data
+kafka-producer-perf-test --producer-props bootstrap.servers=localhost:9092 --topic demo-tier --record-size 1000 --throughput 1000 --num-records 3600000
+
+As we have choosen a pretty small hotset we should quickly see data arriving in our minio bucket
+
