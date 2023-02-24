@@ -1,0 +1,27 @@
+address: 0.0.0.0:7373 # Listen on all network interfaces on port 7373
+
+admin:
+  identity: disabled  # We disable the admin identity since we don't need it in this guide 
+   
+tls:
+  key: /root/server.key    # The KES server TLS private key
+  cert: /root/server.cert    # The KES server TLS certificate
+   
+policy:
+  myapp: 
+    allow:
+    - /v1/key/create/my-key*
+    - /v1/key/generate/my-key*
+    - /v1/key/decrypt/my-key*
+    - /v1/key/create/my-minio*
+    - /v1/key/generate/my-minio*
+    - /v1/key/decrypt/my-minio* 
+    identities:
+    - 204a35fd8b06b0de474456723b853e5f01509eb05d59f26f495d047096bda2c6 # Use the identity of your client.crt
+   
+keystore:
+  fs:
+    path: ./keys # Choose a directory for the secret keys
+log:
+  error: on
+  audit: on    

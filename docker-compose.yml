@@ -1,0 +1,87 @@
+---
+version: '3.5'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  broker:
+    image: confluentinc/cp-server:latest
+    container_name: broker
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+      KAFKA_CONFLUENT_TIER_FEATURE: "true"
+      KAFKA_CONFLUENT_TIER_ENABLE: "true"
+      KAFKA_CONFLUENT_TIER_BACKEND: "S3"
+      KAFKA_CONFLUENT_TIER_S3_BUCKET: "tiered-storage"
+      KAFKA_CONFLUENT_TIER_S3_REGION: "us-east-1"
+      KAFKA_CONFLUENT_TIER_METADATA_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_TIER_S3_FORCE_PATH_STYLE_ACCESS: true
+      AWS_ACCESS_KEY_ID: "demo"
+      AWS_SECRET_ACCESS_KEY: "welcome1"
+      KAFKA_CONFLUENT_TIER_S3_AWS_ENDPOINT_OVERRIDE: "http://minio:9000"
+      KAFKA_LOG_SEGMENT_BYTES: 1048576 #1Mb
+      KAFKA_LOG_RETENTION_MS: 600000 # 10 minute retention
+      KAFKA_CONFLUENT_TIER_LOCAL_HOTSET_MS: 60000 # hotset of 1 minute
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:latest
+    restart: always
+    container_name: control-center
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: broker:29092
+      CONTROL_CENTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_REPLICATION: 1
+      CONTROL_CENTER_COMMAND_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_METRICS_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_UI_AUTOUPDATE_ENABLE: "true"             
+
+  minio:
+    image: minio/minio:latest
+    restart: always
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    environment: 
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123
+      MINIO_KMS_KES_ENDPOINT: https://minio-kes:7373
+      MINIO_KMS_KES_KEY_FILE: /data/client.key
+      MINIO_KMS_KES_CERT_FILE: /data/client.cert
+      MINIO_KMS_KES_CAPATH: /data/server.cert
+      MINIO_KMS_KES_KEY_NAME: my-minioz
+    command: server --console-address ":9090" /data
+    volumes:
+      - ./data/minio:/data  
